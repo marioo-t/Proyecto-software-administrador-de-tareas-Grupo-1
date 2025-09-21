@@ -5,7 +5,7 @@ El sistema simula un **Administrador de Procesos** con interfaz gráfica moderna
 
 ---
 
-## 🚀 Funcionalidades principales
+## Funcionalidades principales
 
 - **Seguridad (Login):** Validación de usuario y contraseña antes de ingresar al sistema.
 - **Diseño de interfaz:** Panel lateral, panel principal y paleta de colores personalizada.
@@ -21,7 +21,7 @@ El sistema simula un **Administrador de Procesos** con interfaz gráfica moderna
 
 ---
 
-## 👥 Integrantes y aportes
+## Integrantes y aportes
 
 - **Gabriel Guillen** → Diseño de la interfaz y revisión final.
 - **Mario Taracena** → Registro de procesos y pruebas de integración.
@@ -31,7 +31,7 @@ El sistema simula un **Administrador de Procesos** con interfaz gráfica moderna
 
 ---
 
-## 🛠️ Tecnologías utilizadas
+## Tecnologías utilizadas
 
 - **Lenguaje:** C# (.NET Framework / WinForms)
 - **UI:** [Guna.UI2.WinForms](https://www.nuget.org/packages/Guna.UI2.WinForms/)
