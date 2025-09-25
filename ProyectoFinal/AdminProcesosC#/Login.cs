@@ -1,3 +1,6 @@
+ // =============================================
+ // TODO INTERFAZ DE LOGIN - DYLAN HERNANDEZ
+ // =============================================
 using Guna.UI2.WinForms;
 using System;
 using System.Collections.Generic;
@@ -42,7 +45,9 @@ namespace AdminProcesosC_
             CenterPanel();
             PositionCloseButton();
         }
-
+ // =============================================
+ // DISEÃ‘O DE INTERFAZ - GABRIEL GUILLÃ‰N
+ // =============================================
         private void ApplyColors()
         {
             this.BackColor = Color.FromArgb(32, 32, 32);
@@ -95,7 +100,7 @@ namespace AdminProcesosC_
 
             if (string.IsNullOrEmpty(usuarioIngresado) || string.IsNullOrEmpty(contrasenaIngresada))
             {
-                MessageBox.Show("Debe ingresar tanto el usuario como la contraseña.",
+                MessageBox.Show("Debe ingresar tanto el usuario como la contraseÃ±a.",
                                 "Campos incompletos",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Warning);
@@ -138,7 +143,7 @@ namespace AdminProcesosC_
             }
             else
             {
-                MessageBox.Show("El usuario o la contraseña no son correctos. Inténtelo nuevamente.",
+                MessageBox.Show("El usuario o la contraseÃ±a no son correctos. IntÃ©ntelo nuevamente.",
                                 "Acceso denegado",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Error);
