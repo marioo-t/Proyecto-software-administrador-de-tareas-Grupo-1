@@ -1,22 +1,6 @@
-// =======================================================
-// Aporte individual – Proyecto Administrador de Procesos
-// Autor: Gabriel Guillén
-// Módulo: Diseño de Interfaz
-// Descripción: Implementación del diseño gráfico de la ventana
-// principal usando Guna.UI2 (paneles, botones, datagrid, etc.).
-// Este aporte se centra únicamente en la vista, sin incluir
-// lógica de procesos ni eventos funcionales.
-// =======================================================
-
-using Guna.UI2.WinForms;
-using System.Drawing;
-using System.Windows.Forms;
-
-namespace AdminProcesosC_
-{
-    public partial class ProcesosSimulator : Form
-    {
-        // Controles de la interfaz
+// =============================================
+        // DECLARACIÓN DE COMPONENTES DE INTERFAZ - GABRIEL GUILLEN
+        // =============================================
         private Guna2Panel pnlSidebar;
         private Guna2Panel pnlMain;
         private Guna2Button btnActualizar;
@@ -24,180 +8,215 @@ namespace AdminProcesosC_
         private Guna2Button btnNuevaTarea;
         private Guna2Button btnCerrar;
         private Guna2DataGridView dgvProcesos;
-        private Guna2ProgressBar pbCpuUsage;
-        private Guna2TextBox txtProcessInfo;
         private Guna2HtmlLabel lblTitulo;
         private Guna2HtmlLabel lblUsuario;
+        private Guna2HtmlLabel lblSelectedInfo;
+        private Guna2TabControl tabControl;
+        private TabPage tabProcesos;
+        private TabPage tabRendimiento;
 
-        private string usuarioActual;
-
-        public ProcesosSimulator(string nombreUsuario)
+        // =============================================
+        // DISEÑO DE INTERFAZ - GABRIEL GUILLEN
+        // =============================================
+        private void ConfigurarInterfazPersonalizada()
         {
-            this.usuarioActual = nombreUsuario;
-
-            InitializeComponent();
-            InitializeGunaUI(); // Cargar solo el diseño
-        }
-
-        private void InitializeGunaUI()
-        {
-            // Ventana
+            this.SuspendLayout();
             this.Text = $"Administrador de Procesos - Sesión: {usuarioActual}";
             this.WindowState = FormWindowState.Maximized;
-            this.BackColor = PaletaColores.AzulPrincipal;
-            this.ForeColor = PaletaColores.BlancoCrema;
+            this.BackColor = Color.FromArgb(32, 32, 32);
+            this.ForeColor = Color.White;
+            this.DoubleBuffered = true;
 
-            // Panel lateral
-            pnlSidebar = new Guna2Panel
+            InitializeMainPanel();
+            InitializeTabControl();
+            InitializeProcesosTab();
+            InitializeRendimientoTab();
+            InitializeSidebar();
+            InitializeSystemMonitor();
+
+            this.ResumeLayout(false);
+
+            this.Shown += (s, e) =>
             {
-                Dock = DockStyle.Left,
-                Width = 200,
-                FillColor = PaletaColores.AzulSecundario
+                actualizacionMetricasTimer.Start();
+                Task.Run(() => UpdateProcessList());
             };
-            this.Controls.Add(pnlSidebar);
+        }
 
-            // Panel principal
+        // =============================================
+        // INICIALIZACIÓN DEL PANEL PRINCIPAL - GABRIEL GUILLEN
+        // =============================================
+        private void InitializeMainPanel()
+        {
             pnlMain = new Guna2Panel
             {
                 Dock = DockStyle.Fill,
-                FillColor = PaletaColores.AzulPrincipal
+                FillColor = Color.FromArgb(32, 32, 32)
             };
             this.Controls.Add(pnlMain);
+        }
 
-            // Título
-            lblTitulo = new Guna2HtmlLabel
+
+        // =============================================
+        // INICIALIZACIÓN DEL CONTROL DE PESTAÑAS - GABRIEL GUILLEN
+        // =============================================
+        private void InitializeTabControl()
+        {
+            tabControl = new Guna2TabControl
             {
-                Text = "Admin de Procesos",
-                Dock = DockStyle.Top,
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
-                ForeColor = PaletaColores.DoradoClaro,
-                Padding = new Padding(10, 20, 0, 5),
-                Height = 60,
-                BackColor = PaletaColores.AzulSecundario
+                Dock = DockStyle.Fill,
+                ItemSize = new Size(120, 40),
+                SelectedIndex = 0
             };
-            pnlSidebar.Controls.Add(lblTitulo);
 
-            // Usuario
-            lblUsuario = new Guna2HtmlLabel
+            pnlMain.Controls.Add(tabControl);
+
+            tabProcesos = new TabPage("Procesos");
+            tabRendimiento = new TabPage("Rendimiento");
+
+            tabControl.TabPages.Add(tabProcesos);
+            tabControl.TabPages.Add(tabRendimiento);
+        }
+        // =============================================
+        // CONFIGURACIÓN DE COLUMNAS DEL DATAGRIDVIEW - GABRIEL GUILLEN
+        // =============================================
+        private void ConfigureDataGridViewColumns()
+        {
+            dgvProcesos.Columns.Clear();
+
+            var columns = new[]
             {
-                Text = $"Usuario: {usuarioActual}",
-                Dock = DockStyle.Top,
-                Font = new Font("Segoe UI", 10, FontStyle.Italic),
-                ForeColor = Color.White,
-                Padding = new Padding(10, 0, 0, 10),
-                Height = 25,
-                BackColor = Color.Transparent
+                new { Name = "Nombre", Header = "NOMBRE", Width = 250, Alignment = DataGridViewContentAlignment.MiddleLeft },
+                new { Name = "CPU", Header = "CPU", Width = 70, Alignment = DataGridViewContentAlignment.MiddleRight },
+                new { Name = "Memoria", Header = "MEMORIA", Width = 90, Alignment = DataGridViewContentAlignment.MiddleRight },
+                new { Name = "Disco", Header = "DISCO", Width = 70, Alignment = DataGridViewContentAlignment.MiddleRight },
+                new { Name = "Red", Header = "RED", Width = 70, Alignment = DataGridViewContentAlignment.MiddleRight },
+                new { Name = "GPU", Header = "GPU", Width = 70, Alignment = DataGridViewContentAlignment.MiddleRight }
             };
-            pnlSidebar.Controls.Add(lblUsuario);
 
-            // Botón Actualizar
-            btnActualizar = new Guna2Button
+            foreach (var col in columns)
             {
-                Text = "Actualizar",
-                Dock = DockStyle.Top,
-                FillColor = PaletaColores.AzulGris,
-                ForeColor = PaletaColores.BlancoCrema,
-                Height = 45,
-                Margin = new Padding(10)
-            };
-            pnlSidebar.Controls.Add(btnActualizar);
+                dgvProcesos.Columns.Add(new DataGridViewTextBoxColumn
+                {
+                    Name = col.Name,
+                    HeaderText = col.Header,
+                    Width = col.Width,
+                    DefaultCellStyle = new DataGridViewCellStyle
+                    {
+                        Alignment = col.Alignment,
+                        Padding = new Padding(5, 2, 5, 2)
+                    }
+                });
+            }
 
-            // Botón Nueva Tarea
-            btnNuevaTarea = new Guna2Button
-            {
-                Text = "Nueva Tarea",
-                Dock = DockStyle.Top,
-                FillColor = PaletaColores.DoradoClaro,
-                ForeColor = Color.White,
-                Height = 45,
-                Margin = new Padding(10)
-            };
-            pnlSidebar.Controls.Add(btnNuevaTarea);
-
-            // Botón Finalizar
-            btnFinalizarProceso = new Guna2Button
-            {
-                Text = "Finalizar",
-                Dock = DockStyle.Top,
-                FillColor = PaletaColores.DoradoPrincipal,
-                ForeColor = Color.White,
-                Height = 45,
-                Margin = new Padding(10)
-            };
-            pnlSidebar.Controls.Add(btnFinalizarProceso);
-
-            // Botón Cerrar Sesión
-            btnCerrar = new Guna2Button
-            {
-                Text = "Cerrar Sesión",
-                Dock = DockStyle.Bottom,
-                FillColor = PaletaColores.DoradoPrincipal,
-                ForeColor = Color.White,
-                Height = 45,
-                Margin = new Padding(10)
-            };
-            pnlSidebar.Controls.Add(btnCerrar);
-
-            // DataGridView
+            dgvProcesos.Columns["Nombre"].AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+        }
+        // =============================================
+        // INICIALIZACIÓN DE LA PESTAÑA DE PROCESOS - GABRIEL GUILLEN
+        // =============================================
+        private void InitializeProcesosTab()
+        {
             dgvProcesos = new Guna2DataGridView
             {
                 Dock = DockStyle.Fill,
-                BackgroundColor = PaletaColores.AzulPrincipal,
-                ForeColor = PaletaColores.BlancoCrema,
+                BackgroundColor = Color.FromArgb(32, 32, 32),
+                ForeColor = Color.White,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
-                BorderStyle = BorderStyle.None
+                BorderStyle = BorderStyle.None,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
+                ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.Single,
+                EnableHeadersVisualStyles = false,
+                RowHeadersVisible = false,
+                AllowUserToResizeRows = false,
+                GridColor = Color.FromArgb(55, 55, 55),
+                ColumnHeadersHeight = 35,
+                DefaultCellStyle = new DataGridViewCellStyle
+                {
+                    BackColor = Color.FromArgb(32, 32, 32),
+                    ForeColor = Color.White,
+                    SelectionBackColor = Color.FromArgb(0, 120, 215),
+                    SelectionForeColor = Color.White,
+                    Font = new Font("Segoe UI", 8.5f),
+                    Padding = new Padding(3)
+                }
             };
-            pnlMain.Controls.Add(dgvProcesos);
 
-            dgvProcesos.ThemeStyle.AlternatingRowsStyle.BackColor = PaletaColores.AzulSecundario;
-            dgvProcesos.ThemeStyle.HeaderStyle.BackColor = PaletaColores.AzulIntermedio;
-            dgvProcesos.ThemeStyle.HeaderStyle.ForeColor = PaletaColores.BlancoCrema;
-            dgvProcesos.ThemeStyle.RowsStyle.BackColor = PaletaColores.AzulPrincipal;
-            dgvProcesos.ThemeStyle.RowsStyle.ForeColor = PaletaColores.BlancoCrema;
-            dgvProcesos.ThemeStyle.GridColor = PaletaColores.AzulGris;
-            dgvProcesos.ThemeStyle.ReadOnly = true;
-            dgvProcesos.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            typeof(DataGridView).InvokeMember("DoubleBuffered",
+                BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.SetProperty,
+                null, dgvProcesos, new object[] { true });
 
-            dgvProcesos.ColumnCount = 6;
-            dgvProcesos.Columns[0].Name = "Nombre";
-            dgvProcesos.Columns[1].Name = "ID";
-            dgvProcesos.Columns[2].Name = "Memoria (MB)";
-            dgvProcesos.Columns[3].Name = "CPU (%)";
-            dgvProcesos.Columns[4].Name = "Prioridad";
-            dgvProcesos.Columns[5].Name = "Tipo";
+            ConfigureDataGridViewColumns();
 
-            // Barra CPU
-            pbCpuUsage = new Guna2ProgressBar
-            {
-                Dock = DockStyle.Bottom,
-                Height = 10,
-                ProgressColor = PaletaColores.DoradoPrincipal,
-                ProgressColor2 = PaletaColores.DoradoClaro
-            };
-            pnlMain.Controls.Add(pbCpuUsage);
+            dgvProcesos.SelectionChanged += dgvProcesos_SelectionChanged;
+            dgvProcesos.ColumnHeaderMouseClick += dgvProcesos_ColumnHeaderMouseClick;
 
-            // Info Proceso
-            txtProcessInfo = new Guna2TextBox
-            {
-                Dock = DockStyle.Bottom,
-                Height = 120,
-                Multiline = true,
-                ReadOnly = true,
-                ScrollBars = ScrollBars.Vertical,
-                FillColor = PaletaColores.AzulSecundario,
-                ForeColor = PaletaColores.BlancoCrema,
-                BorderThickness = 0,
-                Margin = new Padding(5),
-                PlaceholderText = "Selecciona un proceso para ver detalles..."
-            };
-            pnlMain.Controls.Add(txtProcessInfo);
-
-            // Orden visual
-            pnlMain.BringToFront();
-            pbCpuUsage.BringToFront();
-            txtProcessInfo.BringToFront();
+            tabProcesos.Controls.Add(dgvProcesos);
         }
-    }
-}
+        // =============================================
+        // CREACIÓN DE TARJETAS DE MÉTRICAS MODERNAS - GABRIEL GUILLEN
+        // =============================================
+        private Panel CreateModernMetricCard(string titulo, string subtitulo, string descripcion, string detalles, Color color, string chartType)
+        {
+            var card = new Panel
+            {
+                Width = 380,
+                Height = 280,
+                Margin = new Padding(15, 10, 15, 10),
+                BackColor = Color.FromArgb(45, 45, 45),
+                BorderStyle = BorderStyle.FixedSingle,
+                Padding = new Padding(20)
+            };
+
+            var lblTitulo = new Label
+            {
+                Text = titulo,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                ForeColor = Color.White,
+                Location = new Point(20, 20),
+                AutoSize = true
+            };
+            card.Controls.Add(lblTitulo);
+
+            var lblValor = new Label
+            {
+                Name = $"lblValor{chartType}",
+                Text = "0%",
+                Font = new Font("Segoe UI", 24, FontStyle.Bold),
+                ForeColor = color,
+                Location = new Point(20, 45),
+                AutoSize = true
+            };
+            card.Controls.Add(lblValor);
+            cardValueLabels[chartType] = lblValor;
+
+            var lblSubtitulo = new Label
+            {
+                Text = subtitulo,
+                Font = new Font("Segoe UI", 9),
+                ForeColor = Color.LightGray,
+                Location = new Point(20, 85),
+                AutoSize = true
+            };
+            card.Controls.Add(lblSubtitulo);
+
+            var miniChart = CreateHorizontalMiniChart(chartType, color);
+            miniChart.Location = new Point(20, 110);
+            miniChart.Size = new Size(340, 80);
+            card.Controls.Add(miniChart);
+            miniCharts[chartType] = miniChart;
+
+            var lblDetalles = new Label
+            {
+                Text = detalles,
+                Font = new Font("Segoe UI", 8.5f),
+                ForeColor = Color.LightGray,
+                Location = new Point(20, 200),
+                Size = new Size(340, 60),
+                Padding = new Padding(2)
+            };
+            card.Controls.Add(lblDetalles);
+
+            return card;
+        }
