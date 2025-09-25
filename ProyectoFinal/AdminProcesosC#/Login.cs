@@ -1,7 +1,3 @@
-// Aporte: Dylan Hernández
-// Módulo: Seguridad (Login)
-// Descripción: Implementa el formulario de inicio de sesión con validación de usuarios
-
 using Guna.UI2.WinForms;
 using System;
 using System.Collections.Generic;
@@ -19,10 +15,10 @@ namespace AdminProcesosC_
             InitializeComponent();
             CargarCredenciales();
 
-             this.btnCerrar.Click += btnCerrar_Click;
-
+            this.btnCerrar.Click += btnCerrar_Click;
             this.Load += Login_Load;
             this.Resize += Login_Resize;
+            this.btnIngresar.Click += btnIngresar_Click;
         }
 
         private void CargarCredenciales()
@@ -49,30 +45,30 @@ namespace AdminProcesosC_
 
         private void ApplyColors()
         {
-            this.BackColor = PaletaColores.AzulPrincipal;
+            this.BackColor = Color.FromArgb(32, 32, 32);
 
-            pnlLogin.FillColor = PaletaColores.AzulSecundario;
-            pnlLogin.FillColor2 = PaletaColores.AzulSecundario;
+            pnlLogin.FillColor = Color.FromArgb(45, 45, 45);
+            pnlLogin.FillColor2 = Color.FromArgb(45, 45, 45);
 
-            txtUsuario.FillColor = PaletaColores.AzulSecundario;
-            txtUsuario.ForeColor = PaletaColores.BlancoCrema;
+            txtUsuario.FillColor = Color.FromArgb(45, 45, 45);
+            txtUsuario.ForeColor = Color.White;
             txtUsuario.PlaceholderForeColor = Color.Silver;
-            txtUsuario.BorderColor = PaletaColores.AzulClaro;
-            txtUsuario.FocusedState.BorderColor = PaletaColores.DoradoPrincipal;
+            txtUsuario.BorderColor = Color.FromArgb(70, 70, 70);
+            txtUsuario.FocusedState.BorderColor = Color.FromArgb(0, 120, 215);
 
-            txtContrasena.FillColor = PaletaColores.AzulSecundario;
-            txtContrasena.ForeColor = PaletaColores.BlancoCrema;
+            txtContrasena.FillColor = Color.FromArgb(45, 45, 45);
+            txtContrasena.ForeColor = Color.White;
             txtContrasena.PlaceholderForeColor = Color.Silver;
-            txtContrasena.BorderColor = PaletaColores.AzulClaro;
-            txtContrasena.FocusedState.BorderColor = PaletaColores.DoradoPrincipal;
+            txtContrasena.BorderColor = Color.FromArgb(70, 70, 70);
+            txtContrasena.FocusedState.BorderColor = Color.FromArgb(0, 120, 215);
 
-            btnIngresar.FillColor = PaletaColores.DoradoPrincipal;
-            btnIngresar.ForeColor = PaletaColores.AzulPrincipal;
-            btnIngresar.HoverState.FillColor = PaletaColores.DoradoClaro;
-            btnIngresar.HoverState.ForeColor = PaletaColores.AzulPrincipal;
+            btnIngresar.FillColor = Color.FromArgb(0, 120, 215);
+            btnIngresar.ForeColor = Color.White;
+            btnIngresar.HoverState.FillColor = Color.FromArgb(0, 150, 255);
+            btnIngresar.HoverState.ForeColor = Color.White;
 
             btnCerrar.FillColor = Color.Transparent;
-            btnCerrar.ForeColor = PaletaColores.BlancoCrema;
+            btnCerrar.ForeColor = Color.White;
             btnCerrar.HoverState.FillColor = Color.Red;
             btnCerrar.HoverState.ForeColor = Color.White;
         }
@@ -119,11 +115,26 @@ namespace AdminProcesosC_
                 txtContrasena.Clear();
 
                 this.Hide();
-                ProcesosSimulator procesosSimulator = new ProcesosSimulator(usuarioIngresado);
 
-                procesosSimulator.FormClosed += (s, args) => this.Show();
+                // CREAR INSTANCIA SIN USING Y MANEJAR EL CIERRE MANUALMENTE
+                ProcesosSimulator procesosSimulator = null;
+                try
+                {
+                    procesosSimulator = new ProcesosSimulator(usuarioIngresado);
+                    procesosSimulator.FormClosed += (s, args) =>
+                    {
+                        this.Show();
+                        procesosSimulator?.Dispose();
+                    };
 
-                procesosSimulator.ShowDialog();
+                    procesosSimulator.ShowDialog();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error al abrir el administrador: {ex.Message}", "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    this.Show();
+                }
             }
             else
             {
@@ -140,7 +151,7 @@ namespace AdminProcesosC_
 
         private void btnCerrar_Click(object sender, EventArgs e)
         {
-            this.Close(); 
+            Application.Exit();
         }
     }
 }
